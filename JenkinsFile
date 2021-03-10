@@ -12,13 +12,6 @@ bat(/"${mvnHome}\bin\mvn" -Dmaven.test.failure.ignore clean package/)
 }
 }
 
-stage('Build Docker image') {
-steps {
-echo "-=- build Docker image -=-"
-sh "docker build -t ${ORG_NAME}/${APP_NAME}:${APP_VERSION} -t ${ORG_NAME}/${APP_NAME}:latest ."
-}
-}
-
 stage('Run Docker image') {
 steps {
 echo "-=- run Docker image -=-"
@@ -44,13 +37,24 @@ bat(/"${mvnHome}\bin\mvn" sonar:sonar/)
 }
 }
 
-stage('Push Docker image') {
+stage("Docker build") {
 steps {
-echo "-=- push Docker image -=-"
-withDockerRegistry([ credentialsId: "${ORG_NAME}-docker-hub", url: "" ]) {
-sh "docker push ${ORG_NAME}/${APP_NAME}:${APP_VERSION}"
-sh "docker tag ${ORG_NAME}/${APP_NAME}:${APP_VERSION} ${ORG_NAME}/${APP_NAME}:latest"
+sh "docker build -t Jaasir/spring-devops:${BUILD_TIMESTAMP} ."
 }
+}
+
+stage("Docker login") {
+steps {
+withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '',
+usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+sh "docker login --username $USERNAME --password $PASSWORD"
+}
+}
+}
+
+stage("Docker push") {
+steps {
+sh "docker push Jaasir/spring-devops:${BUILD_TIMESTAMP}"
 }
 }
 }
