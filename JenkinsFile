@@ -55,4 +55,3 @@ sh "docker tag ${ORG_NAME}/${APP_NAME}:${APP_VERSION} ${ORG_NAME}/${APP_NAME}:la
 }
 }
 
-}
